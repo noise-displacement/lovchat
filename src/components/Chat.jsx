@@ -1,40 +1,18 @@
 import PropTypes from "prop-types";
+import ChatMessage from "./ChatMessage";
 
 function Chat(props) {
   let chatMessages = props.chatMessages;
   let activeLawFields = props.activeLawFields;
-
-  let userMessageStyle = "bg-dark-red text-white self-end";
-  let botMessageStyle = "bg-white text-dark-red self-start";
 
   return (
     <>
       <div className="flex flex-col grow">
         {chatMessages.map((message) => {
           return (
-            <div
-              key={message.key}
-              className={
-                "message p-4 mb-4 rounded-xl max-w-[80%] " +
-                (message.user ? userMessageStyle : botMessageStyle)
-              }
-            >
-              <p>{message.message}</p>
-            </div>
+            <ChatMessage key={message.key} message={message} activeLawFields={activeLawFields} />
           );
         })}
-      </div>
-
-      <div>
-        {activeLawFields.length > 1
-          ? activeLawFields.map((field, i) => {
-              return (
-                <button className="p-2 bg-slate-100 mr-2" key={i}>
-                  {field.title}
-                </button>
-              );
-            })
-          : null}
       </div>
     </>
   );

@@ -1,14 +1,30 @@
-import { useState } from "react";
-import Chat from "./Chat";
-import InputForm from "./InputForm";
+import { useEffect, useState } from "react";
+import Chat from "../components/Chat";
+import InputForm from "../components/InputForm";
+import { motion } from "framer-motion";
 
 function ChatPage() {
   const [activeLawFields, setActiveLawFields] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
 
+  useEffect(() => {
+    console.log(activeLawFields);
+  }, [activeLawFields]);
+
   return (
-    <>
-      <div className="flex h-full">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        transition: {
+          duration: 0.25,
+          ease: [0.61, 1, 0.88, 1],
+        },
+      }}
+      exit={{ opacity: 0 }}
+      className="flex h-full"
+    >
         <div className="previousChats w-[33vw] bg-white h-full rounded-3xl">
           <div className="p-6 flex flex-col justify-between h-full">
             <h1 className="text-md font-semibold">Tidligere samtaler</h1>
@@ -27,7 +43,6 @@ function ChatPage() {
                 <svg
                   version="1.1"
                   xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
                   width="16.4746"
                   height="16.123"
                 >
@@ -66,8 +81,7 @@ function ChatPage() {
             />
           </div>
         </div>
-      </div>
-    </>
+    </motion.div>
   );
 }
 

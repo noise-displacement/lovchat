@@ -4,10 +4,15 @@ export default {
   theme: {
     extend: {
       colors: { 
-        "dark-red": "#4a0d0d",
-        "light-red": "#E7473C",
+        "dark-red": "#274B4B",
+        "light-red": "#DFF0E4",
         "light-grey": "#F0F0F0",
         "grey": "#606060"
+     },
+
+     fontFamily: {
+        "sans": ["Inter", "sans-serif"],
+        "serif": ["Merriweather", "serif"]
      },
     },
   },

@@ -43,10 +43,21 @@ class LogicManager {
     this.activeLawFields = extractedLawFields;
   }
 
+  async extractKeywordsFromQuestion() {
+    let extractedKeywords = [];
+    let text = this.userQuestion;
+    let extractPrompt =
+      "Extract only the most important keywords from the following text. Exclude any question related words from your response and only include words that are useful for identifying the context of the question. Here is the text:";
+
+    extractedKeywords = await request.postUserQuestion(extractPrompt, text);
+
+    return extractedKeywords;
+  }
+
   removeKeywordFromReponse({ response }, keywords) {
     let text = response.kwargs.content;
 
-    if(keywords.length === 1) return text;
+    if (keywords.length === 1) return text;
 
     for (let keyword of keywords) {
       const regex = new RegExp("\\b" + keyword.name + "\\b", "i");
@@ -85,6 +96,9 @@ class LogicManager {
     let response = {
       text: "",
       activeLawFields: [],
+      activeKeywords: [],
+      lovDataResponse: "",
+      analysedResponse: "",
     };
 
     this.setUserQuestion(userPrompt);
@@ -97,15 +111,67 @@ class LogicManager {
 
       this.extractLawFieldsFromResponse(response);
       response.activeLawFields = this.activeLawFields;
+
       response.text = this.removeKeywordFromReponse(
         response,
         this.activeLawFields
       );
+
+      if (this.activeLawFields.length === 1) {
+        console.log("One law field");
+        console.log(this.activeLawFields[0].document);
+        response.lovDataResponse = await this.getLawDocument(
+          this.activeLawFields[0].document
+        );
+        response.analysedResponse = await this.analyseLawDocument(
+          response.lovDataResponse,
+          this.userQuestion
+        );
+        console.log("analysed response", response.analysedResponse);
+        // console.log("Lawdoc: ", lawDoc);
+        // response.activeKeywords = await this.extractKeywordsFromQuestion();
+        // console.log("Active keywords: ", response.activeKeywords);
+      }
     } catch (err) {
-      console.log("Error fetching response from agent 1: ", err);
+      console.log("Error fetching response from agent 1: ");
+      console.error(err);
     }
 
+    console.log(response);
     return response;
+  }
+
+  async lawFieldQuery() {
+    if (this.activeLawFields.length === 0) return;
+
+    if (this.activeLawFields.length < 2) {
+      return;
+    }
+  }
+
+  async getLawDocument(lawRef) {
+    let response;
+    response = await request.postLovRenderRef(lawRef);
+    return response.response;
+  }
+
+  async analyseLawDocument(lawDocument, userQuestion) {
+    if (this.activeLawFields.length === 0) return;
+    if (!lawDocument) return;
+
+    let response;
+    console.log(lawDocument, userQuestion);
+    const prompt =
+      "Bruk informasjonen fra denne teksten: " +
+      lawDocument +
+      "Til å svare på dette spørsmålet: " +
+      userQuestion +
+      "Inkluder kun svaret på spørsmålet, ikke hele teksten.";
+    const systemMessage = "You will analyse text and simplify it";
+
+    response = await request.postUserQuestion(prompt, systemMessage);
+
+    return response.response.kwargs.content;
   }
 }
 
