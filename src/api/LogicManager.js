@@ -13,12 +13,17 @@ class LogicManager {
 
     this.userQuestion;
     this.interpretQuestionSystemMessage =
-      "You are not giving legal advice. Analyse the question and figure out if the user’s question relates to one of these keywords:" +
+      "You are not giving legal advice. Analyse the question and figure out if the user's question relates to one of these keywords:" +
       lawFields.map((lawField) => lawField.title.toLowerCase() + ", ") +
-      " If the users question relates to more than one of the keywords, write a message similar to" +
-      " ‘Her er de relevante fagfeltene jeg plukket opp på. Vennligst velg den du vil vite mer om først: #keyword#’ " +
-      "and only include the relevant keyword from the list given to you. However if there is only one keyword, write a message similar to" +
-      " 'Okei, skal sjekke om jeg kan finne noe om #keyword# for deg. Vennligst vent litt...'";
+      " Find if the users question relates to one of the keywords, and write a response that contains only the keywords. No other text, just the keywords." +
+      " If you cant find any keywords return no other text only this keyword: QQQQ";
+    // this.interpretQuestionSystemMessage =
+    //   "You are not giving legal advice. Analyse the question and figure out if the user's question relates to one of these keywords:" +
+    //   lawFields.map((lawField) => lawField.title.toLowerCase() + ", ") +
+    //   " If the users question relates to more than one of the keywords, write a message similar to" +
+    //   " 'Her er de relevante fagfeltene jeg plukket opp på. Vennligst velg den du vil vite mer om først: #keyword#' " +
+    //   "and only include the relevant keyword from the list given to you. However if there is only one keyword, write a message similar to" +
+    //   " 'Okei, skal sjekke om jeg kan finne noe om #keyword# for deg. Vennligst vent litt...'";
 
     this.activeLawFields = [];
 
@@ -47,7 +52,9 @@ class LogicManager {
     let extractedKeywords = [];
     let text = this.userQuestion;
     let extractPrompt =
-      "Extract only the most important keywords from the following text. Exclude any question related words from your response and only include words that are useful for identifying the context of the question. Here is the text:";
+      "Extract only the most important keywords from the following text." +
+      " Exclude any question related words from your response and only include words that are useful for identifying the context of the question." +
+      " Here is the text:";
 
     extractedKeywords = await request.postUserQuestion(extractPrompt, text);
 
@@ -116,6 +123,8 @@ class LogicManager {
         response,
         this.activeLawFields
       );
+
+      console.log("Active lawfields", this.activeLawFields);
 
       if (this.activeLawFields.length === 1) {
         console.log("One law field");
