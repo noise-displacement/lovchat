@@ -13,10 +13,15 @@ class LogicManager {
 
     this.userQuestion;
     this.interpretQuestionSystemMessage =
-      "You are not giving legal advice. Analyse the question and figure out if the user's question relates to one of these keywords:" +
+      "You will analyse this question and find any relation to any of these keywords: " +
       lawFields.map((lawField) => lawField.title.toLowerCase() + ", ") +
-      " Find if the users question relates to one of the keywords, and write a response that contains only the keywords. No other text, just the keywords." +
-      " If you cant find any keywords return no other text only this keyword: QQQQ";
+      " If the quesition has a relation to one or more of the keywords, write the matching keywords in you response. But only write the keywords, no commas, nothing else but the keywords." +
+      " If you cant find any keyword that is matching, write nothing but this code in your response: QQQQ";
+
+    // "Du skal analysere et spørsmål. Analyser spørsmålet og finn relasjon til disse ordene:" +
+    // lawFields.map((lawField) => lawField.title.toLowerCase() + ", ") +
+    // " Hvis spørsmålet har en relasjon til ett av ordene, skriv ut kun ordet eller ordene fra listen som matcher" +
+    // " Hvis du ikke kan finne noe stikkord som matcher, skriv ut kun denne koden og ingenting annet: QQQQ";
     // this.interpretQuestionSystemMessage =
     //   "You are not giving legal advice. Analyse the question and figure out if the user's question relates to one of these keywords:" +
     //   lawFields.map((lawField) => lawField.title.toLowerCase() + ", ") +
@@ -37,10 +42,18 @@ class LogicManager {
   extractLawFieldsFromResponse({ response }) {
     let extractedLawFields = [];
     let text = response.kwargs.content;
+    console.log("Lawfield", text);
 
     for (let lawField of lawFields) {
-      const regex = new RegExp("\\b" + lawField.name + "\\b", "i");
+      let words = lawField.name.split(" ");
+      let regexPattern = words
+        .map((word) => "(?=.*\\b" + word + "\\b)")
+        .join("");
+      const regex = new RegExp(regexPattern, "i");
+      // const regex = new RegExp("\\b" + lawField.name + "\\b", "i");
+      console.log(regex.test(text));
       if (regex.test(text)) {
+        console.log("Lawfield match", lawField);
         extractedLawFields.push(lawField);
       }
     }
@@ -119,23 +132,26 @@ class LogicManager {
       this.extractLawFieldsFromResponse(response);
       response.activeLawFields = this.activeLawFields;
 
-      response.text = this.removeKeywordFromReponse(
-        response,
-        this.activeLawFields
-      );
+      // response.text = this.removeKeywordFromReponse(
+      //   response,
+      //   this.activeLawFields
+      // );
 
       console.log("Active lawfields", this.activeLawFields);
 
       if (this.activeLawFields.length === 1) {
         console.log("One law field");
         console.log(this.activeLawFields[0].document);
+        
         response.lovDataResponse = await this.getLawDocument(
           this.activeLawFields[0].document
         );
+
         response.analysedResponse = await this.analyseLawDocument(
           response.lovDataResponse,
           this.userQuestion
         );
+
         console.log("analysed response", response.analysedResponse);
         // console.log("Lawdoc: ", lawDoc);
         // response.activeKeywords = await this.extractKeywordsFromQuestion();
@@ -176,7 +192,7 @@ class LogicManager {
       "Til å svare på dette spørsmålet: " +
       userQuestion +
       "Inkluder kun svaret på spørsmålet, ikke hele teksten.";
-    const systemMessage = "You will analyse text and simplify it";
+    const systemMessage = "You will analyse the text";
 
     response = await request.postUserQuestion(prompt, systemMessage);
 

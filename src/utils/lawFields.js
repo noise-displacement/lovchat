@@ -24,7 +24,7 @@ const lawFields = [
   },
 
   {
-    name: "orden og ro",
+    name: "orden ro",
     title: "orden ro",
     document: "NL/lov/1999-03-26-17/§5-2",
   },

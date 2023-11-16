@@ -43,14 +43,14 @@ function InputForm(props) {
           let fetch = await manager.runFullQuery(userPrompt);
           response = fetch;
 
-          // setChatMessages((previousMessages) => [
-          //   ...previousMessages,
-          //   {
-          //     key: chatMessages.length + 1,
-          //     user: false,
-          //     message: fetch.text,
-          //   },
-          // ]);
+          setChatMessages((previousMessages) => [
+            ...previousMessages,
+            {
+              key: chatMessages.length + 1,
+              user: false,
+              message: fetch.text,
+            },
+          ]);
 
           setChatMessages((previousMessages) => [
             ...previousMessages,
