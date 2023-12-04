@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 function ChatPage() {
   const [activeLawFields, setActiveLawFields] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
+  const [loadingMessage, setLoadingMessage] = useState(false);
 
   useEffect(() => {
     console.log(activeLawFields);
@@ -23,17 +24,21 @@ function ChatPage() {
         },
       }}
       exit={{ opacity: 0 }}
-      className="flex h-full"
+      className="flex flex-col h-full"
     >
-        <div className="previousChats w-[33vw] bg-white h-full rounded-3xl">
-          <div className="p-6 flex flex-col justify-between h-full">
-            <h1 className="text-md font-semibold">Tidligere samtaler</h1>
+      <div className="h-16 w-full"></div>
+      <div className="flex h-full">
+        <div className="previousChats relative z-20 w-[33vw] bg-white h-full rounded-3xl">
+          <div className="p-8 flex flex-col justify-between h-full">
+            <h1 className="font-sans-alt text-dark-red text-lg text-md font-semibold">
+              Tidligere samtaler
+            </h1>
 
             <div className="flex flex-col mt-4 gap-4 grow">
-              <span className="bg-light-grey p-4 text-dark-red rounded-xl">
+              <span className="bg-light-red p-4 text-dark-red rounded-xl">
                 Kan utleier nekte husdyr?
               </span>
-              <span className="bg-light-grey p-4 text-dark-red rounded-xl">
+              <span className="bg-light-red p-4 text-dark-red rounded-xl">
                 Hva skjer om jeg ikke betaler leien i tide?
               </span>
             </div>
@@ -71,16 +76,19 @@ function ChatPage() {
             <Chat
               chatMessages={chatMessages}
               activeLawFields={activeLawFields}
+              loadingMessage={loadingMessage}
             />
 
             <InputForm
               activeLawFields={activeLawFields}
+              setLoadingMessage={setLoadingMessage}
               chatMessages={chatMessages}
               setChatMessages={setChatMessages}
               setActiveLawFields={setActiveLawFields}
             />
           </div>
         </div>
+      </div>
     </motion.div>
   );
 }

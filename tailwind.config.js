@@ -12,7 +12,8 @@ export default {
 
      fontFamily: {
         "sans": ["Inter", "sans-serif"],
-        "serif": ["Merriweather", "serif"]
+        "serif": ["Palatino", "serif"],
+        "sans-alt": ["Poppins", "sans-serif"]
      },
     },
   },

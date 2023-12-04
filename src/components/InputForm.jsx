@@ -6,6 +6,7 @@ function InputForm(props) {
   let chatMessages = props.chatMessages;
   let setChatMessages = props.setChatMessages;
   let setActiveLawFields = props.setActiveLawFields;
+  let setLoadingMessage = props.setLoadingMessage;
 
   const [userPrompt, setUserPrompt] = useState("");
 
@@ -26,6 +27,7 @@ function InputForm(props) {
         className="px-6 py-4"
         onClick={async () => {
           let response;
+          setLoadingMessage(true);
 
           setChatMessages((previousMessages) => [
             ...previousMessages,
@@ -43,27 +45,46 @@ function InputForm(props) {
           let fetch = await manager.runFullQuery(userPrompt);
           response = fetch;
 
-          setChatMessages((previousMessages) => [
-            ...previousMessages,
-            {
-              key: chatMessages.length + 1,
-              user: false,
-              message: fetch.text,
-            },
-          ]);
+          console.log("Input form response ", response);
 
-          setChatMessages((previousMessages) => [
-            ...previousMessages,
-            {
-              key: chatMessages.length + 2,
-              user: false,
-              message: fetch.analysedResponse,
-            },
-          ]);
+          // setChatMessages((previousMessages) => [
+          //   ...previousMessages,
+          //   {
+          //     key: chatMessages.length + 1,
+          //     user: false,
+          //     message: fetch.text,
+          //   },
+          // ]);
+          {
+            fetch.analysedResponse
+              ? setChatMessages((previousMessages) => [
+                  ...previousMessages,
+                  {
+                    key: chatMessages.length + 2,
+                    user: false,
+                    message: fetch.analysedResponse,
+                  },
+                ])
+              : null;
+          }
+
+          {
+            fetch.noCategoryDetectedText
+              ? setChatMessages((previousMessages) => [
+                  ...previousMessages,
+                  {
+                    key: chatMessages.length + 2,
+                    user: false,
+                    message: fetch.noCategoryDetectedText,
+                  },
+                ])
+              : null;
+          }
 
           console.log(chatMessages);
 
           // setReceivedMessage(response.text);
+          setLoadingMessage(false);
           setActiveLawFields(response.activeLawFields);
         }}
       >
@@ -90,6 +111,7 @@ InputForm.propTypes = {
   chatMessages: PropTypes.array,
   setChatMessages: PropTypes.func,
   setActiveLawFields: PropTypes.func,
+  setLoadingMessage: PropTypes.func,
 };
 
 export default InputForm;

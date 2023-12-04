@@ -8,10 +8,10 @@ function Nav(props) {
   const [currentPage, setCurrentPage] = useState(undefined);
 
   return (
-    <nav className="p-6 flex justify-between items-center sticky top-0">
+    <nav className="p-8 flex justify-between items-center sticky top-0">
       <div className="flex h-[75%]">
         <Link className="flex" to="/" onClick={() => setCurrentPage("/")}>
-          <img src="/lovchatlogo.svg" />
+          <img src="/lovchatqm2.svg" />
         </Link>
       </div>
 
@@ -20,7 +20,7 @@ function Nav(props) {
             return (
                 <Link
                 key={page.title}
-                className={`px-4 text-dark-red ${
+                className={`px-4 text-dark-red font-sans-alt text-lg ${
                     currentPage === page.path ? "underline" : ""
                 }`}
                 to={page.path}

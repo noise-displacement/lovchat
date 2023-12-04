@@ -15,7 +15,7 @@ class LogicManager {
     this.interpretQuestionSystemMessage =
       "You will analyse this question and find any relation to any of these keywords: " +
       lawFields.map((lawField) => lawField.title.toLowerCase() + ", ") +
-      " If the quesition has a relation to one or more of the keywords, write the matching keywords in you response. But only write the keywords, no commas, nothing else but the keywords." +
+      " If the quesition has a relation to one or more of the keywords, write the matching keywords in you response. But only write the keywords, no commas, nothing else but the keywords. The keywords also needs to be written exactly like the keywords given to you." +
       " If you cant find any keyword that is matching, write nothing but this code in your response: QQQQ";
 
     // "Du skal analysere et spørsmål. Analyser spørsmålet og finn relasjon til disse ordene:" +
@@ -29,6 +29,9 @@ class LogicManager {
     //   " 'Her er de relevante fagfeltene jeg plukket opp på. Vennligst velg den du vil vite mer om først: #keyword#' " +
     //   "and only include the relevant keyword from the list given to you. However if there is only one keyword, write a message similar to" +
     //   " 'Okei, skal sjekke om jeg kan finne noe om #keyword# for deg. Vennligst vent litt...'";
+
+    this.noCategoryDetectedSystemMessage =
+      "Skriv en melding som beskriver at du ikke kan svare på spørsmålet fordi du mangler riktig kontekst. Be så brukeren om å skrive en melding med flere detaljer om temaet som brukeren skriver om";
 
     this.activeLawFields = [];
 
@@ -118,18 +121,20 @@ class LogicManager {
       activeLawFields: [],
       activeKeywords: [],
       lovDataResponse: "",
+      analysedQuestion: "",
       analysedResponse: "",
+      noCategoryDetectedText: "",
     };
 
     this.setUserQuestion(userPrompt);
 
     try {
-      response = await request.postUserQuestion(
+      response.analysedQuestion = await request.postUserQuestion(
         this.userQuestion,
         this.interpretQuestionSystemMessage
       );
 
-      this.extractLawFieldsFromResponse(response);
+      this.extractLawFieldsFromResponse(response.analysedQuestion);
       response.activeLawFields = this.activeLawFields;
 
       // response.text = this.removeKeywordFromReponse(
@@ -139,10 +144,21 @@ class LogicManager {
 
       console.log("Active lawfields", this.activeLawFields);
 
-      if (this.activeLawFields.length === 1) {
+      if (
+        this.activeLawFields.length === 1 &&
+        this.activeLawFields[0].name === "QQQQ"
+      ) {
+        response.noCategoryDetectedText = await request.postUserQuestion(
+          this.userQuestion,
+          this.noCategoryDetectedSystemMessage
+        ).then((res) => {
+          console.log(res);
+          return res.response.kwargs.content;
+        });
+      } else if (this.activeLawFields.length === 1) {
         console.log("One law field");
         console.log(this.activeLawFields[0].document);
-        
+
         response.lovDataResponse = await this.getLawDocument(
           this.activeLawFields[0].document
         );
@@ -156,6 +172,20 @@ class LogicManager {
         // console.log("Lawdoc: ", lawDoc);
         // response.activeKeywords = await this.extractKeywordsFromQuestion();
         // console.log("Active keywords: ", response.activeKeywords);
+      } else {
+        for(let i = 0; i < this.activeLawFields.length; i++) {
+          console.log("lawfield condjks", this.activeLawFields[i]);
+          response.lovDataResponse += await this.getLawDocument(
+            this.activeLawFields[i].document
+          );
+
+          console.log("Lovdata response", response.lovDataResponse);
+        }
+
+        response.analysedResponse = await this.analyseLawDocument(
+          response.lovDataResponse,
+          this.userQuestion
+        );
       }
     } catch (err) {
       console.log("Error fetching response from agent 1: ");
